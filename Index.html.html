@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Datapack Editor</title>
+<style>
+:root{--bg:#0b2a5b;--sf:#12366f;--ink:#fff;--mut:#9db7e6;--ln:#2a508f;--ac:#ffc93c;--acf:#3a2500;--ed:#ffc93c;--edb:#3d3a16;--bad:#ff7b6e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+button{background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--ac)}
+button.pri{background:var(--ac);color:var(--acf);border-color:var(--ac);font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+input,select{background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:6px 8px;min-width:0}
+header{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:14px 20px;border-bottom:2px solid var(--ink)}
+header h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.01em}
+#fn{color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40ch}
+#st{color:var(--ed);font-weight:600}
+.sp{flex:1}
+#tabs{display:flex;gap:2px;overflow-x:auto;padding:0 20px;border-bottom:1px solid var(--ln);background:var(--sf)}
+#tabs button{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 12px;white-space:nowrap}
+#tabs button.on{border-bottom-color:var(--ac);font-weight:700}
+#tabs small{color:var(--mut);margin-left:6px;font-weight:400}
+main{padding:18px 20px 40px;max-width:1100px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.bar input[type=search]{flex:1 1 220px}
+.mut{color:var(--mut)}
+.row{display:grid;grid-template-columns:44px 96px 1fr auto auto;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid var(--ln)}
+.row.nolg{grid-template-columns:96px 1fr auto auto}
+.row.mod{background:var(--edb);box-shadow:-4px 0 0 var(--ed)}
+.row input.id{background:none;border-color:transparent;color:var(--mut)}
+.row input.id:not([readonly]){background:var(--sf);border-color:var(--ln);color:var(--ink)}
+.bad{color:var(--bad);font-weight:600}
+.th,.chk{width:40px;height:40px;padding:0;display:grid;place-items:center;background:repeating-conic-gradient(var(--ln) 0 25%,transparent 0 50%) 0 0/10px 10px;border-radius:6px;overflow:hidden;position:relative}
+.th img,.chk img{max-width:100%;max-height:100%;object-fit:contain}
+img.none{visibility:hidden}
+.th:has(img.none)::after,.chk:has(img.none)::after{content:"+";position:absolute;color:var(--mut);font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.card{border:1px solid var(--ln);border-radius:8px;background:var(--sf);padding:8px;display:flex;flex-direction:column;gap:6px}
+.card.mod{border-color:var(--ed)}
+.card .chk{width:100%;height:96px}
+.card .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .act{display:flex;gap:6px}.card .act button{flex:1;padding:4px 6px}
+.pg{display:flex;gap:8px;align-items:center;margin:14px 0}
+h2{font-size:15px;margin:26px 0 8px}
+.kv{display:grid;grid-template-columns:160px 1fr;gap:8px;margin-bottom:6px}
+.stats{display:flex;flex-wrap:wrap;gap:6px 28px;margin:0}
+.stats div{display:flex;gap:8px}.stats b{font-weight:700}
+.chkl{margin:0;padding:0;list-style:none}.chkl li{padding:4px 0;border-bottom:1px solid var(--ln)}
+.drop{border:2px dashed var(--ink);border-radius:10px;padding:64px 24px;text-align:center}
+.drop h2{font-size:20px;margin:0 0 8px}
+body.over .drop{border-color:var(--ac);background:var(--sf)}
+.mb.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.dbw{overflow:auto;max-height:70vh;border:1px solid var(--ln);border-radius:6px;background:var(--sf)}
+.dbt{border-collapse:collapse;font-size:13px}
+.dbt th{position:sticky;top:0;background:var(--bg);text-align:left;padding:6px 8px;border-bottom:2px solid var(--ink);white-space:nowrap;z-index:1}
+.dbt td{padding:0;border-bottom:1px solid var(--ln);white-space:nowrap}
+.dbt td.t{padding:5px 8px}
+.dbt td input{border:0;border-radius:0;background:none;padding:5px 8px}
+.dbt td input.mod{background:var(--edb);box-shadow:inset 3px 0 0 var(--ed)}
+.dbt td.act{padding:2px 6px}.dbt td.act button{padding:2px 8px;margin-right:4px}
+textarea.sql{width:100%;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:8px}
+pre{white-space:pre-wrap;background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:10px;font-size:12px;overflow:auto}
+body{background:linear-gradient(180deg,#154a9e 0,#0b2a5b 240px,#071a3d 100%) fixed;font-weight:500}
+body::before{content:"";display:block;height:8px;background:repeating-linear-gradient(90deg,#2fa82a 0 44px,#3dc236 44px 88px)}
+header{background:linear-gradient(#1b5fd0,#0f3f93);border-bottom:4px solid #061636}
+header h1{font-size:21px;font-weight:900;font-style:italic;text-shadow:0 2px 0 #061636}
+button{background:#1d57b8;border:0;border-bottom:4px solid #0c2f6b;border-radius:10px;padding:7px 14px;font-weight:800;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.45)}
+button:hover{filter:brightness(1.12)}
+button:active:not(:disabled){transform:translateY(2px);border-bottom-width:2px}
+button.pri{background:linear-gradient(#5bea4a,#2fb82a);border-bottom-color:#1c7a18;color:#fff}
+button:disabled{filter:grayscale(.7) brightness(.8)}
+.mb.on{background:linear-gradient(#ffd54a,#f2a900);border-bottom-color:#a36d00;color:#3a2500;text-shadow:none}
+#tabs{background:#071a3d;border-bottom:3px solid #061636;gap:6px;padding:8px 20px}
+#tabs button{border-radius:999px;background:#12366f;border-bottom:3px solid #0a2552;padding:6px 14px}
+#tabs button.on{background:linear-gradient(#ffd54a,#f2a900);border-bottom-color:#a36d00;color:#3a2500;text-shadow:none}
+#tabs small{color:inherit;opacity:.7}
+input,select,textarea.sql{background:#0a2552;border:2px solid #2a508f;border-radius:10px;color:#fff}
+.row input.id:not([readonly]){background:#0a2552;border-color:#2a508f}
+h2{font-weight:900;font-style:italic}
+.card{background:#12366f;border:3px solid #061636;border-radius:12px}
+.card.mod{border-color:var(--ed)}
+.dbw{border:3px solid #061636;border-radius:12px;background:#0f3070}
+.dbt th{background:#1b5fd0;border-bottom:3px solid #061636}
+.dbt td{border-bottom-color:#1c4486}
+.dbt tbody tr:nth-child(even){background:rgba(255,255,255,.05)}
+.drop{border:3px dashed #5bea4a;background:rgba(255,255,255,.05);border-radius:16px}
+body.over .drop{background:rgba(91,234,74,.15)}
+@media(max-width:560px){.row{grid-template-columns:44px 70px 1fr auto}.row .bad{display:none}main,header{padding-left:12px;padding-right:12px}}
+</style></head>
+<body>
+<header>
+  <h1>Datapack Editor</h1><span><button class="mb" data-mode="zip">Zip pack</button> <button class="mb" data-mode="db">Database</button></span><span id="fn" class="mut"></span><span class="sp"></span><span id="st"></span>
+  <label id="encl" class="mut" hidden><input type="checkbox" id="encx"> Encrypt on export</label><button id="openb">Open file</button><button id="exp" class="pri" disabled>Export</button>
+</header>
+<nav id="tabs" aria-label="Sections"></nav>
+<main id="main"></main>
+<input id="open" type="file" hidden>
+<input id="pick" type="file" accept="image/*" hidden>
+<input id="add" type="file" accept="image/*" multiple hidden>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const FILES=['clubs','competitions','players','stadiums','unbundled_clubs'];
+const LOGO={clubs:'club_logos',unbundled_clubs:'club_logos',competitions:'competition_logos'};
+const TABS=[['overview','Overview'],['clubs','Clubs'],['players','Players'],['stadiums','Stadiums'],['competitions','Competitions'],['unbundled_clubs','Unbundled clubs'],['club_logos','Club logos'],['competition_logos','Competition logos'],['adboards','Adboards']];
+let Z=null,fname='',C={},urls={},changed=new Set(),tab='overview',V={q:'',p:0,f:'',nf:[]},uid=0,target='',timer;
+
+function mk(t){const eol=t.includes('\r\n')?'\r\n':'\n',L=t.split(/\r?\n/);if(L[L.length-1]==='')L.pop();
+ return{eol,trail:/\n$/.test(t),dirty:false,rows:L.filter(l=>l!=='').map(l=>{const i=l.indexOf(',');return{u:++uid,a:i<0?l:l.slice(0,i),b:i<0?'':l.slice(i+1)}})}}
+function ser(k){const c=C[k];return c.rows.map(r=>r.a+','+r.b).join(c.eol)+(c.trail?c.eol:'')}
+const P=()=>Object.keys(Z.files).filter(n=>!Z.files[n].dir);
+const inDir=d=>P().filter(n=>n.startsWith(d+'/')&&!n.slice(d.length+1).includes('/')).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+const stem=p=>p.split('/').pop().replace(/\.webp$/i,'');
+const ids=()=>new Set([...C.clubs.rows,...C.unbundled_clubs.rows].map(r=>r.a));
+function dups(k){const s=new Set(),d=new Set();for(const r of C[k].rows){if(s.has(r.a))d.add(r.a);s.add(r.a)}return d}
+const nSaved=()=>changed.size+Object.values(C).filter(c=>c.dirty).length;
+const toast=m=>{$('#st').textContent=m;clearTimeout(timer);timer=setTimeout(status,4000)};
+function status(){const db=mode==='db',has=db?D:Z,n=db?dN:nSaved();$('#encl').hidden=!(db&&D&&dRes===32);$('#st').textContent=has?(n?n+' unsaved change'+(n>1?'s':''):'No changes yet'):'';$('#exp').disabled=!has||!n;$('#fn').textContent=db?dname:fname;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===mode))}
+
+async function url(p){if(urls[p])return urls[p];const e=Z.file(p);if(!e)return null;return urls[p]=URL.createObjectURL(new Blob([await e.async('blob')],{type:'image/webp'}))}
+function hydrate(root){root.querySelectorAll('img[data-p]').forEach(i=>url(i.dataset.p).then(u=>u?i.src=u:i.classList.add('none')))}
+async function toWebp(f){if(f.type==='image/webp')return f;const b=await createImageBitmap(f),c=document.createElement('canvas');c.width=b.width;c.height=b.height;c.getContext('2d').drawImage(b,0,0);return new Promise(r=>c.toBlob(r,'image/webp',.92))}
+async function setImg(p,f){const b=await toWebp(f);if(!b){toast('Could not convert '+f.name);return}Z.file(p,b);if(urls[p]){URL.revokeObjectURL(urls[p]);delete urls[p]}changed.add(p)}
+
+async function load(file){
+ $('#main').innerHTML='<p class="mut">Reading '+esc(file.name)+'…</p>';
+ try{const z=await JSZip.loadAsync(file),got=FILES.concat('settings').filter(k=>z.file(k+'.csv'));
+  if(!got.length)throw new Error('No clubs.csv, players.csv or other datapack files found at the top level of this zip.');
+  Z=z;fname=file.name;C={};urls={};changed=new Set();V={q:'',p:0,f:'',nf:[]};
+  for(const k of FILES.concat('settings')){const e=Z.file(k+'.csv');C[k]=mk(e?await e.async('string'):'')}
+  tab='overview'}catch(e){Z=null;$('#main').innerHTML='<p class="bad">'+esc(e.message)+'</p>'}
+ render()}
+
+function render(){
+ if(mode==='db')return dbRender();
+ $('#tabs').innerHTML=TABS.map(([k,l])=>`<button data-tab="${k}" class="${k===tab?'on':''}">${l}${Z?`<small>${cnt(k)}</small>`:''}</button>`).join('');
+ const m=$('#main');
+ if(!Z){if(!m.querySelector('.bad'))m.innerHTML='<div class="drop"><h2>Drop a datapack zip here</h2><p class="mut">Built for packs laid out like pro_datapack_v86: five id,name CSVs plus club_logos, competition_logos and adboards.</p><button class="pri" id="openb2">Choose file</button></div>';status();return}
+ tab==='overview'?ov(m):FILES.includes(tab)?tbl(m):gal(m);status()}
+const cnt=k=>FILES.includes(k)?C[k].rows.length.toLocaleString():k==='overview'?'':P().filter(n=>n.startsWith(k+'/')).length.toLocaleString();
+
+function ov(m){
+ const ids_=ids(),ck=[['Duplicate IDs across all CSVs',FILES.reduce((n,k)=>n+dups(k).size,0)],
+  ['Club logos with no matching club',inDir('club_logos').filter(p=>!ids_.has(stem(p))).length],
+  ['Clubs without a logo',C.clubs.rows.filter(r=>!Z.file('club_logos/'+r.a+'.webp')).length],
+  ['Competitions without a logo',C.competitions.rows.filter(r=>!Z.file('competition_logos/'+r.a+'.webp')).length]];
+ m.innerHTML=`<div class="stats">${TABS.slice(1).map(([k,l])=>`<div><b>${cnt(k)}</b><span class="mut">${l.toLowerCase()}</span></div>`).join('')}</div>
+ <h2>Pack settings</h2>${C.settings.rows.map((r,i)=>`<div class="kv"><span class="mut">${esc(r.a)}</span><input data-set="${i}" value="${esc(r.b)}"></div>`).join('')||'<p class="mut">No settings.csv in this pack.</p>'}
+ <h2>Checks</h2><ul class="chkl">${ck.map(([t,n])=>`<li>${t}: ${n?`<b class="bad">${n.toLocaleString()}</b>`:'<span class="mut">none</span>'}</li>`).join('')}</ul>
+ <p class="mut">Edits stay in this page until you export. The original zip is never touched, and files you did not change are copied across as they were.</p>`}
+
+function tbl(m){
+ m.innerHTML=`<div class="bar"><input id="q" type="search" placeholder="Search id or name" value="${esc(V.q)}" aria-label="Search"><button id="addrow">Add row</button><span id="cn" class="mut"></span></div><div id="list"></div>`;lst()}
+function lst(){
+ const c=C[tab],q=V.q.toLowerCase(),lg=LOGO[tab];let rows=c.rows;
+ if(q)rows=rows.filter(r=>(r.k??=(r.a+' '+r.b).toLowerCase()).includes(q));
+ const n=rows.length,pg=100,pages=Math.max(1,Math.ceil(n/pg));V.p=Math.min(V.p,pages-1);const d=dups(tab);
+ $('#cn').textContent=n.toLocaleString()+' row'+(n==1?'':'s');
+ $('#list').innerHTML=rows.slice(V.p*pg,V.p*pg+pg).map(r=>`<div class="row${lg?'':' nolg'}${r.m?' mod':''}" data-u="${r.u}">${lg?`<button class="th" data-logo="${lg}/${esc(r.a)}.webp" title="Replace logo" aria-label="Replace logo"><img data-p="${lg}/${esc(r.a)}.webp" alt=""></button>`:''}<input class="id" data-f="a" value="${esc(r.a)}" aria-label="ID" ${r.n?'':'readonly'}><input data-f="b" value="${esc(r.b)}" aria-label="Name"><span class="bad">${d.has(r.a)?'duplicate id':''}</span><button data-del>Remove</button></div>`).join('')||'<p class="mut">No rows match.</p>'
+ +(pages>1?`<div class="pg"><button data-pg="-1" ${V.p?'':'disabled'}>Previous</button><span class="mut">Page ${V.p+1} of ${pages}</span><button data-pg="1" ${V.p<pages-1?'':'disabled'}>Next</button></div>`:'');
+ hydrate($('#list'))}
+
+function gal(m){
+ const ad=tab==='adboards';let dir=tab;
+ if(ad){const fs=[...new Set(P().filter(n=>n.startsWith('adboards/')).map(n=>n.split('/')[1]).concat(V.nf))].sort();if(!fs.includes(V.f))V.f=fs[0]||'';dir='adboards/'+V.f;
+  var sel=`<select id="fsel" aria-label="Adboard folder">${fs.map(f=>`<option ${f===V.f?'selected':''}>${esc(f)}</option>`).join('')}</select>`}
+ m.innerHTML=`<div class="bar">${ad?sel:''}<input id="q" type="search" placeholder="Filter by file name" value="${esc(V.q)}" aria-label="Filter"><button id="addb">Add images</button>${ad?'<input id="nfn" placeholder="new-folder-name" size="16" aria-label="New folder name"><button id="nfb">Create folder</button>':''}<span id="cn" class="mut"></span></div><div id="list"></div>`;
+ m.dataset.dir=dir;glst()}
+function glst(){
+ const dir=$('#main').dataset.dir,q=V.q.toLowerCase();let ps=inDir(dir).filter(p=>p.toLowerCase().includes(q));
+ const n=ps.length,pg=60,pages=Math.max(1,Math.ceil(n/pg));V.p=Math.min(V.p,pages-1);
+ const ref=tab==='club_logos'?ids():tab==='competition_logos'?new Set(C.competitions.rows.map(r=>r.a)):null;
+ $('#cn').textContent=n.toLocaleString()+' file'+(n==1?'':'s');
+ $('#list').innerHTML='<div class="grid">'+ps.slice(V.p*pg,V.p*pg+pg).map(p=>`<div class="card${changed.has(p)?' mod':''}" data-p="${esc(p)}"><div class="chk"><img data-p="${esc(p)}" alt=""></div><div class="nm" title="${esc(p)}">${esc(p.split('/').pop())}</div>${ref&&!ref.has(stem(p))?'<span class="mut">not listed in CSV</span>':''}<div class="act"><button data-rep>Replace</button><button data-rm>Delete</button></div></div>`).join('')+'</div>'
+ +(pages>1?`<div class="pg"><button data-pg="-1" ${V.p?'':'disabled'}>Previous</button><span class="mut">Page ${V.p+1} of ${pages}</span><button data-pg="1" ${V.p<pages-1?'':'disabled'}>Next</button></div>`:'');
+ hydrate($('#list'))}
+const refresh=()=>FILES.includes(tab)?lst():glst();
+
+document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.id==='openb'||b.id==='openb2')return $('#open').click();
+ if(b.id==='exp')return exportZip();
+ if(b.dataset.tab){tab=b.dataset.tab;V.q='';V.p=0;return render()}
+ if(b.dataset.pg){V.p+=+b.dataset.pg;refresh();return window.scrollTo(0,0)}
+ if(b.id==='addrow'){const c=C[tab],id=c.rows.reduce((m,r)=>Math.max(m,+r.a||0),0)+1;c.rows.unshift({u:++uid,a:String(id),b:'',n:1,m:1});c.dirty=true;V.q='';V.p=0;tbl($('#main'));status();return $('#list input[data-f=b]').focus()}
+ if(b.dataset.del!==undefined){const u=+b.closest('.row').dataset.u,c=C[tab];c.rows=c.rows.filter(r=>r.u!==u);c.dirty=true;refresh();return status()}
+ if(b.dataset.logo){target=b.dataset.logo;return $('#pick').click()}
+ if(b.dataset.rep!==undefined){target=b.closest('.card').dataset.p;return $('#pick').click()}
+ if(b.dataset.rm!==undefined){const p=b.closest('.card').dataset.p;Z.remove(p);delete urls[p];changed.add('-'+p);changed.delete(p);glst();return status()}
+ if(b.id==='addb')return $('#add').click();
+ if(b.id==='nfb'){const v=$('#nfn').value.trim().replace(/[\\/]/g,'-');if(v){V.nf.push(v);V.f=v;gal($('#main'))}}});
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.id==='q'){V.q=t.value;V.p=0;return refresh()}
+ if(t.dataset.set!==undefined){C.settings.rows[+t.dataset.set].b=t.value;C.settings.dirty=true;return status()}
+ if(t.dataset.f){const row=t.closest('.row'),r=C[tab].rows.find(x=>x.u==row.dataset.u);r[t.dataset.f]=t.value;r.k=undefined;r.m=1;C[tab].dirty=true;row.classList.add('mod');status()}});
+document.addEventListener('change',async e=>{const t=e.target;
+ if(t.id==='open'&&t.files[0]){const f=t.files[0];if(/\.zip$/i.test(f.name)){mode='zip';load(f)}else loadDb(f)}
+ if(t.id==='fsel'){V.f=t.value;V.p=0;gal($('#main'))}
+ if(t.id==='pick'&&t.files[0]){await setImg(target,t.files[0]);refresh();status()}
+ if(t.id==='add'&&t.files.length){const dir=$('#main').dataset.dir;for(const f of t.files)await setImg(dir+'/'+f.name.replace(/\.[^.]+$/,'')+'.webp',f);glst();status()}
+ if(t.type==='file')t.value=''});
+addEventListener('dragover',e=>{e.preventDefault();document.body.classList.add('over')});
+addEventListener('dragleave',()=>document.body.classList.remove('over'));
+addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('over');const f=e.dataTransfer.files[0];if(f){if(/\.zip$/i.test(f.name)){mode='zip';load(f)}else loadDb(f)}});
+
+async function exportZip(){
+ if(mode==='db')return exportDb();
+ toast('Building zip…');
+ for(const k in C)if(C[k].dirty)Z.file(k+'.csv',ser(k));
+ const blob=await Z.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}}),name=fname.replace(/\.zip$/i,'')+'_edited.zip';
+ let d=null;try{d=await window.claude?.use('downloads')}catch(_){}
+ if(d){try{await d.save({filename:name,data:blob});toast('Export ready');return}catch(e){return toast(e.code==='declined'?'Save cancelled':'Save failed: '+(e.message||e.code))}}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();toast('Export ready')}
+/* ---------- SQLite3MC ChaCha20-Poly1305 page cipher (reserve 32, raw key) ---------- */
+const DBKEY=Uint8Array.from('5cbfa5f5a7747d543aaafd7951262ba9d44a7671a265f8352a823dd93b83592f'.match(/../g).map(h=>parseInt(h,16)));
+function chacha(key,ctr,n12,len){const st=new Uint32Array(16),x=new Uint32Array(16),out=new Uint8Array(len),kv=new DataView(key.buffer,key.byteOffset,32),nv=new DataView(n12.buffer,n12.byteOffset,12),ov=new DataView(out.buffer);
+ st.set([0x61707865,0x3320646e,0x79622d32,0x6b206574]);for(let i=0;i<8;i++)st[4+i]=kv.getUint32(4*i,true);for(let i=0;i<3;i++)st[13+i]=nv.getUint32(4*i,true);
+ const qr=(a,b,c,d)=>{x[a]+=x[b];x[d]^=x[a];x[d]=(x[d]<<16)|(x[d]>>>16);x[c]+=x[d];x[b]^=x[c];x[b]=(x[b]<<12)|(x[b]>>>20);x[a]+=x[b];x[d]^=x[a];x[d]=(x[d]<<8)|(x[d]>>>24);x[c]+=x[d];x[b]^=x[c];x[b]=(x[b]<<7)|(x[b]>>>25)};
+ for(let off=0;off<len;off+=64){st[12]=(ctr+off/64)>>>0;x.set(st);
+  for(let r=0;r<10;r++){qr(0,4,8,12);qr(1,5,9,13);qr(2,6,10,14);qr(3,7,11,15);qr(0,5,10,15);qr(1,6,11,12);qr(2,7,8,13);qr(3,4,9,14)}
+  for(let i=0;i<16&&off+4*i<len;i++){const w=(x[i]+st[i])>>>0;if(off+4*i+4<=len)ov.setUint32(off+4*i,w,true);else for(let j=0;off+4*i+j<len;j++)out[off+4*i+j]=(w>>>(8*j))&255}}
+ return out}
+function poly(key,msg){const kv=new DataView(key.buffer,key.byteOffset,32),L=(o)=>kv.getBigUint64(o,true)|(kv.getBigUint64(o+8,true)<<64n),r=L(0)&0x0ffffffc0ffffffc0ffffffc0fffffffn,s=L(16),p=(1n<<130n)-5n,mv=new DataView(msg.buffer,msg.byteOffset,msg.length);let a=0n,i=0;
+ for(;i+16<=msg.length;i+=16)a=((a+(mv.getBigUint64(i,true)|(mv.getBigUint64(i+8,true)<<64n))+(1n<<128n))*r)%p;
+ if(i<msg.length){let v=0n;for(let j=msg.length-1;j>=i;j--)v=(v<<8n)|BigInt(msg[j]);a=((a+v+(1n<<BigInt(8*(msg.length-i))))*r)%p}
+ a=(a+s)&((1n<<128n)-1n);const t=new Uint8Array(16);for(let j=0;j<16;j++){t[j]=Number(a&255n);a>>=8n}return t}
+const SQH=[...'SQLite format 3\0'].map(c=>c.charCodeAt(0));
+function dbGeo(b){const dv=new DataView(b.buffer,b.byteOffset,b.length);let ps=dv.getUint16(16);if(ps===1)ps=65536;return{ps,res:b[20],n:Math.floor(b.length/ps)}}
+const isPlain=b=>SQH.every((c,i)=>b[i]===c);
+async function decryptDb(inp,onp){const g=dbGeo(inp);if(g.res!==32||g.ps<512||(g.ps&(g.ps-1))||inp.length%g.ps)throw new Error('Not a recognised encrypted datapack (unexpected page size or reserved bytes).');
+ const out=new Uint8Array(inp),PS=g.ps;let bad=0;
+ for(let pg=1;pg<=g.n;pg++){const base=(pg-1)*PS,page=out.subarray(base,base+PS),res=page.subarray(PS-32,PS-16),tag=page.subarray(PS-16),n12=res.subarray(0,12),
+   ctr=(new DataView(res.buffer,res.byteOffset+12,4).getUint32(0,true)^pg)>>>0,B=chacha(DBKEY,ctr,n12,64),t=poly(B.subarray(0,32),page.subarray(0,PS-16));
+  if(t.some((v,i)=>v!==tag[i])){if(pg===1)throw new Error('This file is not encrypted with the datapack key, or uses a different format.');bad++}
+  const off=pg===1?24:0,ks=chacha(B.subarray(32),ctr+1,n12,PS-32-off);for(let i=0;i<ks.length;i++)page[off+i]^=ks[i];
+  if(pg===1)page.set(SQH);page.fill(0,PS-32);
+  if(onp&&pg%150===0){onp(pg,g.n);await new Promise(r=>setTimeout(r))}}
+ return{bytes:out,bad}}
+async function encryptDb(inp,onp){const g=dbGeo(inp);if(g.res!==32)throw new Error('Only databases with 32 reserved bytes per page can be encrypted (databases that came from an encrypted file).');
+ const out=new Uint8Array(inp),PS=g.ps;
+ for(let pg=1;pg<=g.n;pg++){const base=(pg-1)*PS,page=out.subarray(base,base+PS),res=page.subarray(PS-32,PS-16);crypto.getRandomValues(res);if(pg===1)crypto.getRandomValues(page.subarray(0,16));
+  const n12=res.subarray(0,12),ctr=(new DataView(res.buffer,res.byteOffset+12,4).getUint32(0,true)^pg)>>>0,B=chacha(DBKEY,ctr,n12,64),off=pg===1?24:0,ks=chacha(B.subarray(32),ctr+1,n12,PS-32-off);
+  for(let i=0;i<ks.length;i++)page[off+i]^=ks[i];page.set(poly(B.subarray(0,32),page.subarray(0,PS-16)),PS-16);
+  if(onp&&pg%150===0){onp(pg,g.n);await new Promise(r=>setTimeout(r))}}
+ return out}
+
+/* ---------- SQLite database mode ---------- */
+let mode='zip',dRes=0,D=null,dname='',SQL=null,dN=0,dT=[],dErr='',DT={t:'',cols:[],q:'',p:0,view:'browse'};
+const idq=s=>'"'+s.replace(/"/g,'""')+'"',X=(s,p)=>D.exec(s,p)[0]?.values||[];
+function sqlLib(){if(SQL)return Promise.resolve(SQL);return new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-asm-memory-growth.js';s.onload=async()=>{try{ok(SQL=await initSqlJs())}catch(e){no(e)}};s.onerror=()=>no(new Error('Could not load the SQLite engine (sql.js).'));document.head.appendChild(s)})}
+function lt(){dT=X("select name,type from sqlite_master where type in('table','view') and name not like 'sqlite_%' order by type desc,name").map(([n,ty])=>[n,ty,X(`select count(*) from ${idq(n)}`)[0][0]]);if(!dT.find(x=>x[0]===DT.t)){DT.t=(dT.find(x=>x[0]==='Club')||dT[0]||[''])[0];sc()}}
+function sc(){DT.cols=X(`pragma table_info(${idq(DT.t)})`).map(r=>({n:r[1],ty:r[2]||'',nn:r[3],pk:r[5]}));DT.q='';DT.p=0}
+async function loadDb(f){mode='db';dErr='';$('#main').innerHTML='<p class="mut">Opening '+esc(f.name)+'\u2026</p>';
+ try{const L=await sqlLib();let b=new Uint8Array(await f.arrayBuffer()),enc=false,bad=0;
+  if(!isPlain(b)){const r=await decryptDb(b,(p,n)=>{$('#main').innerHTML='<p class="mut">Decrypting page '+p+' of '+n+'\u2026</p>'});b=r.bytes;bad=r.bad;enc=true}
+  const d=new L.Database(b);d.exec('select 1 from sqlite_master limit 1');D=d;dname=f.name;dN=0;dRes=b[20];DT={t:'',cols:[],q:'',p:0,view:'browse'};lt();$('#encx').checked=enc;
+  if(bad)setTimeout(()=>toast(bad+' page(s) failed their integrity tag; data may be damaged.'),300)}
+ catch(e){D=null;dErr=e.message.includes('not a database')?'That file is not a SQLite database.':e.message}
+ dbRender()}
+function dbRender(){const m=$('#main');
+ if(!D){$('#tabs').innerHTML='';m.innerHTML=(dErr?`<p class="bad">${esc(dErr)}</p>`:'')+'<div class="drop"><h2>Drop a .db file here</h2><p class="mut">Built for SQLite datapacks with Club, Player, Competition, Stadium and related tables. Encrypted datapacks are decrypted automatically.</p><button class="pri" id="openb2">Choose file</button></div>';return status()}
+ $('#tabs').innerHTML=[['browse','Browse'],['sql','SQL'],['schema','Schema']].map(([k,l])=>`<button data-dtab="${k}" class="${k===DT.view?'on':''}">${l}</button>`).join('');
+ DT.view==='browse'?dbBrowse(m):DT.view==='sql'?dbSql(m):dbSchema(m);status()}
+function dbBrowse(m){m.innerHTML=`<div class="bar"><select id="dts" aria-label="Table">${dT.map(([n,ty,c])=>`<option value="${esc(n)}"${n===DT.t?' selected':''}>${esc(n)}${ty==='view'?' (view)':''} (${c.toLocaleString()})</option>`).join('')}</select><input id="dq" type="search" placeholder="Search all columns" value="${esc(DT.q)}" aria-label="Search"><span id="dcn" class="mut"></span></div><div id="dl"></div>`;dl()}
+function dl(){const ro=dT.find(x=>x[0]===DT.t)?.[1]==='view',{t,cols,q}=DT,W=q?' WHERE '+cols.map(c=>`CAST(${idq(c.n)} AS TEXT) LIKE ?`).join(' OR '):'',P=q?cols.map(()=>'%'+q+'%'):undefined;
+ try{const n=X(`select count(*) from ${idq(t)}${W}`,P)[0][0],pages=Math.max(1,Math.ceil(n/50));DT.p=Math.min(DT.p,pages-1);
+ const rows=X(`select ${ro?'':'rowid,'}* from ${idq(t)}${W} limit 50 offset ${DT.p*50}`,P),o=ro?0:1;
+ $('#dcn').textContent=n.toLocaleString()+' row'+(n==1?'':'s')+(ro?' (read-only view)':'');
+ $('#dl').innerHTML=`<div class="dbw"><table class="dbt"><thead><tr>${cols.map(c=>`<th title="${esc(c.ty)}${c.pk?' (primary key)':''}">${esc(c.n)}</th>`).join('')}${ro?'':'<th></th>'}</tr></thead><tbody>${rows.map(r=>`<tr data-r="${ro?'':r[0]}">${cols.map((c,i)=>{const v=r[i+o];return `<td><input data-dc="${i}" value="${esc(v??'')}"${v===null?' placeholder="NULL"':''}${ro?' readonly':''} style="width:${Math.min(Math.max(String(v??'').length+2,6),30)}ch"></td>`}).join('')}${ro?'':'<td class="act"><button data-ddup>Duplicate</button><button data-ddel>Delete</button></td>'}</tr>`).join('')}</tbody></table></div>`+(pages>1?`<div class="pg"><button data-dpg="-1"${DT.p?'':' disabled'}>Previous</button><span class="mut">Page ${DT.p+1} of ${pages}</span><button data-dpg="1"${DT.p<pages-1?'':' disabled'}>Next</button></div>`:'')}
+ catch(e){$('#dl').innerHTML='<p class="bad">'+esc(e.message)+'</p>'}}
+function dbSql(m){m.innerHTML=`<textarea id="sq" class="sql" rows="6" spellcheck="false" aria-label="SQL">${esc(DT.sql||'SELECT * FROM Club LIMIT 20;')}</textarea><div class="bar"><button class="pri" id="run">Run</button><span class="mut">Statements that change data apply to the open database. Export to keep them.</span></div><div id="sr"></div>`}
+const rt=r=>`<div class="dbw" style="margin-bottom:12px"><table class="dbt"><thead><tr>${r.columns.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${r.values.slice(0,200).map(v=>`<tr>${v.map(x=>`<td class="t">${x===null?'<span class="mut">NULL</span>':esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`+(r.values.length>200?`<p class="mut">Showing 200 of ${r.values.length.toLocaleString()} rows.</p>`:'');
+function dbSchema(m){m.innerHTML=X('select type,name,sql from sqlite_master where sql is not null order by type desc,name').map(([t,n,s])=>`<h2>${esc(t)} ${esc(n)}</h2><pre>${esc(s.replace(/\r/g,''))}</pre>`).join('')}
+async function exportDb(){toast('Building export…');let data=D.export();const base=dname.replace(/\.[^.]+$/,'');if(dRes===32&&$('#encx').checked){try{data=await encryptDb(data,(p,n)=>toast('Encrypting page '+p+' of '+n+'\u2026'))}catch(e){return toast(e.message)}}
+ let d=null;try{d=await window.claude?.use('downloads')}catch(_){}
+ if(d){try{const z=new JSZip();z.file(dname,data);await d.save({filename:base+'_edited.zip',data:await z.generateAsync({type:'blob',compression:'DEFLATE'})});toast('Export ready: unzip to get '+dname)}catch(e){toast(e.code==='declined'?'Save cancelled':'Save failed: '+(e.message||e.code))}return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data]));a.download=base+'_edited.db';a.click();toast('Export ready')}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.mode){mode=b.dataset.mode;return render()}
+ if(mode!=='db'||!D)return;
+ if(b.dataset.dtab){DT.view=b.dataset.dtab;return dbRender()}
+ if(b.dataset.dpg){DT.p+=+b.dataset.dpg;dl();return}
+ if(b.id==='run'){DT.sql=$('#sq').value;try{const rs=D.exec(DT.sql),w=!/^\s*(select|pragma|explain|with)\b/i.test(DT.sql);if(w){dN++;lt()}status();$('#sr').innerHTML=rs.length?rs.map(rt).join(''):`<p class="mut">Done${w?'. '+D.getRowsModified()+' row(s) changed.':'. No rows returned.'}</p>`}catch(er){$('#sr').innerHTML='<p class="bad">'+esc(er.message)+'</p>'}return}
+ if(b.dataset.ddel!==undefined||b.dataset.ddup!==undefined){const r=+b.closest('tr').dataset.r,t=idq(DT.t),npk=DT.cols.filter(c=>c.pk).length;
+  try{if(b.dataset.ddel!==undefined)D.run(`DELETE FROM ${t} WHERE rowid=?`,[r]);else{const ns=DT.cols.filter(c=>!(npk==1&&c.pk&&/^integer$/i.test(c.ty))).map(c=>idq(c.n)).join(',');D.run(`INSERT INTO ${t} (${ns}) SELECT ${ns} FROM ${t} WHERE rowid=?`,[r]);toast('Row duplicated. It is at the end of the table.')}dN++;lt();dbRender()}catch(er){toast(er.message)}}});
+document.addEventListener('input',e=>{if(mode==='db'&&e.target.id==='dq'){DT.q=e.target.value;DT.p=0;dl()}});
+document.addEventListener('change',e=>{const t=e.target;if(mode!=='db'||!D)return;
+ if(t.id==='dts'){DT.t=t.value;sc();return dbRender()}
+ if(t.dataset.dc===undefined)return;const c=DT.cols[+t.dataset.dc];let v=t.value;
+ if(v===''&&!c.nn)v=null;else if(/INT|REAL|DOUB|FLOA|BOOL|NUM/i.test(c.ty)&&v.trim()!==''&&!isNaN(+v))v=+v;
+ try{D.run(`UPDATE ${idq(DT.t)} SET ${idq(c.n)}=? WHERE rowid=?`,[v,+t.closest('tr').dataset.r]);dN++;t.classList.add('mod');status()}catch(er){toast(er.message)}});
+render();
+</script></body></html>
